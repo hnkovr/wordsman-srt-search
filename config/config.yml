@@ -1,0 +1,11 @@
+# Non-secret defaults for srt-search (overridden by env vars with SRT_SEARCH_ prefix).
+log_level: INFO
+language: en
+providers:
+  - podnapisi
+download_dir: downloads
+request_timeout: 30.0
+user_agent: wordsman-srt-search/0.1.0
+podnapisi_base_url: https://www.podnapisi.net
+yify_base_url: https://yifysubtitles.ch
+gestdown_base_url: https://api.gestdown.info
