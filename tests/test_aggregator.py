@@ -82,11 +82,10 @@ def test_search_all_no_providers_fails_loud():
 
 def test_stub_providers_raise_not_implemented():
     settings = make_settings()
-    for stub_cls in (YifyProvider, GestdownProvider):
-        with pytest.raises(ProviderNotImplementedError, match="stub"):
-            asyncio.run(stub_cls(settings).search("Dune"))
-        with pytest.raises(ProviderNotImplementedError, match="stub"):
-            asyncio.run(stub_cls(settings).download("x"))
+    with pytest.raises(ProviderNotImplementedError, match="stub"):
+        asyncio.run(GestdownProvider(settings).search("Dune"))
+    with pytest.raises(ProviderNotImplementedError, match="stub"):
+        asyncio.run(GestdownProvider(settings).download("x"))
 
 
 def test_download_candidate_routes_by_provider(monkeypatch):

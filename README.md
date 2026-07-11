@@ -10,7 +10,7 @@ Autonomous subproduct of [wordsman](https://github.com/hnkovr/wordsman) (consume
 | Provider | Status | Auth | Notes |
 | --- | --- | --- | --- |
 | `podnapisi` | **implemented** | keyless | JSON search on podnapisi.net; downloads unpacked from ZIP |
-| `yify` | stub | keyless | TODO — tracked as "srt-search: implement YIFY provider" (WordsMan) |
+| `yify` | **implemented** | keyless | IMDb suggest → yifysubtitles movie page → ZIP; movies only |
 | `gestdown` | stub | keyless | TODO — tracked as "srt-search: implement Gestdown provider" (WordsMan) |
 
 All providers implement one `SearchProvider` interface

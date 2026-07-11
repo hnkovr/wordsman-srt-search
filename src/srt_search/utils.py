@@ -1,13 +1,32 @@
-"""Internal helpers: filename hygiene and candidate ranking."""
+"""Internal helpers: filename hygiene, archive unpacking, candidate ranking."""
 
 from __future__ import annotations
 
+import io
 import re
+import zipfile
 from pathlib import Path
 
 from srt_search.models import SearchCandidate
 
 _FILENAME_SAFE = re.compile(r"[^A-Za-z0-9._ -]+")
+
+
+def extract_srt_from_archive(payload: bytes, fallback_name: str) -> tuple[str, bytes]:
+    """Return (file_name, srt_bytes) from a ZIP payload, or pass raw SRT through.
+
+    Raises ValueError when the archive is corrupt or holds no .srt entry.
+    """
+    if not payload.startswith(b"PK"):
+        return f"{fallback_name}.srt", payload
+    try:
+        with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+            names = [n for n in archive.namelist() if n.lower().endswith(".srt")]
+            if not names:
+                raise ValueError("archive has no .srt file")
+            return names[0], archive.read(names[0])
+    except zipfile.BadZipFile as exc:
+        raise ValueError("corrupt zip archive") from exc
 
 
 def sanitize_filename(name: str) -> str:

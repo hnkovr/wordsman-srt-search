@@ -6,8 +6,6 @@ not contractually stable — `just probe-live` exercises them against the real s
 
 from __future__ import annotations
 
-import io
-import zipfile
 from typing import Any
 
 import httpx
@@ -16,6 +14,7 @@ from srt_search.config import Settings, get_settings
 from srt_search.logger import log
 from srt_search.models import SearchCandidate
 from srt_search.providers.base import ProviderError, SearchProvider
+from srt_search.utils import extract_srt_from_archive
 
 
 class PodnapisiProvider(SearchProvider):
@@ -70,21 +69,10 @@ class PodnapisiProvider(SearchProvider):
             raise ProviderError(f"podnapisi download transport error: {exc}") from exc
         if resp.status_code != httpx.codes.OK:
             raise ProviderError(f"podnapisi download failed: HTTP {resp.status_code}")
-        return self._extract_srt(candidate_id, resp.content)
-
-    @staticmethod
-    def _extract_srt(candidate_id: str, payload: bytes) -> tuple[str, bytes]:
-        """Podnapisi serves a ZIP with one or more subtitle files; take the first .srt."""
-        if not payload.startswith(b"PK"):
-            return f"{candidate_id}.srt", payload
         try:
-            with zipfile.ZipFile(io.BytesIO(payload)) as archive:
-                names = [n for n in archive.namelist() if n.lower().endswith(".srt")]
-                if not names:
-                    raise ProviderError(f"podnapisi archive for {candidate_id} has no .srt file")
-                return names[0], archive.read(names[0])
-        except zipfile.BadZipFile as exc:
-            raise ProviderError(f"podnapisi returned a corrupt archive for {candidate_id}") from exc
+            return extract_srt_from_archive(resp.content, candidate_id)
+        except ValueError as exc:
+            raise ProviderError(f"podnapisi archive for {candidate_id}: {exc}") from exc
 
     def _to_candidate(self, item: dict[str, Any]) -> SearchCandidate | None:
         pid = item.get("pid") or item.get("id")

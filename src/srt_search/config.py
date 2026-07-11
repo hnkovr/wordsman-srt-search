@@ -31,11 +31,17 @@ class Settings(BaseSettings):
     providers: Annotated[list[str], NoDecode] = ["podnapisi"]
     download_dir: Path = Path("downloads")
     request_timeout: float = 30.0
-    user_agent: str = "wordsman-srt-search/0.1.0"
+    user_agent: str = "wordsman-srt-search/0.2.0"
+    # some resources (yify zip endpoint) 403 non-browser agents without a referer
+    browser_user_agent: str = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+    )
 
     podnapisi_base_url: str = "https://www.podnapisi.net"
     yify_base_url: str = "https://yifysubtitles.ch"
     gestdown_base_url: str = "https://api.gestdown.info"
+    imdb_suggest_url: str = "https://v3.sg.media-imdb.com/suggestion/x"
 
     @field_validator("providers", mode="before")
     @classmethod

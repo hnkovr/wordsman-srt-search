@@ -23,7 +23,7 @@ def test_cli_providers_lists_status():
     result = CliRunner().invoke(main, ["providers"])
     assert result.exit_code == 0
     assert "podnapisi\timplemented" in result.output
-    assert "yify\tstub" in result.output
+    assert "yify\timplemented" in result.output
     assert "gestdown\tstub" in result.output
 
 
