@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
 from pydantic import field_validator
 from pydantic_settings import (
     BaseSettings,
+    NoDecode,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     YamlConfigSettingsSource,
@@ -26,7 +28,7 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
     language: str = "en"
-    providers: list[str] = ["podnapisi"]
+    providers: Annotated[list[str], NoDecode] = ["podnapisi"]
     download_dir: Path = Path("downloads")
     request_timeout: float = 30.0
     user_agent: str = "wordsman-srt-search/0.1.0"
