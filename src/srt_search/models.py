@@ -25,3 +25,15 @@ class SearchResult(BaseModel):
     movie: str
     candidates: list[SearchCandidate]
     failures: list[ProviderFailure]
+
+
+class KinopoiskMovie(BaseModel):
+    kp_id: str
+    title: str | None = None  # localized (usually Russian) name
+    original_title: str | None = None  # alternateName (usually the English original)
+    year: int | None = None
+
+    @property
+    def search_title(self) -> str | None:
+        """Best title for querying English-subtitle providers."""
+        return self.original_title or self.title

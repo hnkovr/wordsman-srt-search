@@ -22,10 +22,16 @@ per-provider failures without hiding partial results, and raises only when every
 
 ```bash
 make install                 # uv sync --group dev
-just providers               # podnapisi  implemented / yify  stub / gestdown  stub
+just providers               # podnapisi  implemented / yify  implemented / gestdown  stub
 just find "Dune" 2021        # merged candidates as JSON
 just get "Dune" 2021 subs/   # download best English SRT, prints saved path
+
+# identify a movie from a kinopoisk URL (title/original_title/year as JSON):
+uv run srt-search resolve-kp "https://www.kinopoisk.ru/film/10355286/"
 ```
+
+Language: set `SRT_SEARCH_LANGUAGE=ru` (or any code a provider knows) to search
+non-English tracks.
 
 Provider endpoint shapes are not contractually stable — `just probe-live` checks
 `podnapisi` against the real site (network; never run in CI).

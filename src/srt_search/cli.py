@@ -36,6 +36,18 @@ def providers() -> None:
         click.echo(f"{name}\t{status}")
 
 
+@main.command(name="resolve-kp")
+@click.argument("url")
+def resolve_kp(url: str) -> None:
+    """Resolve a kinopoisk film URL to movie identification JSON."""
+    from srt_search.kinopoisk import resolve_kinopoisk_url  # lazy: keeps startup light
+
+    movie = resolve_kinopoisk_url(url)
+    payload = movie.model_dump()
+    payload["search_title"] = movie.search_title
+    click.echo(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
 @main.command()
 @click.argument("movie")
 @click.option("--year", type=int, default=None)
