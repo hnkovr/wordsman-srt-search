@@ -24,6 +24,10 @@ probe-live movie="Dune" year="2021":
 probe-live-yify movie="Beautiful Mind" year="2001":
     uv run srt-search find "{{ movie }}" --year {{ year }} --providers yify --limit 3
 
+# Resolve a kinopoisk film URL to movie identification JSON (network!)
+resolve-kp url:
+    uv run srt-search resolve-kp "{{ url }}"
+
 # Render flat .env from config templates
 env-render:
     bash config/.env-render.sh
