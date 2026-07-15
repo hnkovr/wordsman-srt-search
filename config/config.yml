@@ -5,7 +5,7 @@ providers:
   - podnapisi
 download_dir: downloads
 request_timeout: 30.0
-user_agent: wordsman-srt-search/0.4.0
+user_agent: wordsman-srt-search/0.5.0
 podnapisi_base_url: https://www.podnapisi.net
 yify_base_url: https://yifysubtitles.ch
 gestdown_base_url: https://api.gestdown.info

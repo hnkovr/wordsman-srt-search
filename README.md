@@ -11,6 +11,7 @@ Autonomous subproduct of [wordsman](https://github.com/hnkovr/wordsman) (consume
 | --- | --- | --- | --- |
 | `podnapisi` | **implemented** | keyless | JSON search on podnapisi.net; downloads unpacked from ZIP |
 | `yify` | **implemented** | keyless | IMDb suggest → yifysubtitles movie page → ZIP; movies only |
+| `subtitlecat` | **implemented** | keyless | many auto-translated languages per subtitle — honours `SRT_SEARCH_LANGUAGE` (en, **ru**, …); the dual-sub track source |
 | `gestdown` | stub | keyless | TODO — tracked as "srt-search: implement Gestdown provider" (WordsMan) |
 
 ### Dual / bilingual subtitle sources

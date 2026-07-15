@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     providers: Annotated[list[str], NoDecode] = ["podnapisi"]
     download_dir: Path = Path("downloads")
     request_timeout: float = 30.0
-    user_agent: str = "wordsman-srt-search/0.4.0"
+    user_agent: str = "wordsman-srt-search/0.5.0"
     # some resources (yify zip endpoint) 403 non-browser agents without a referer
     browser_user_agent: str = (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "

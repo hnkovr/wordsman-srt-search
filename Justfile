@@ -32,6 +32,10 @@ resolve-kp url:
 open-doublesubs query="":
     uv run srt-search open-doublesubs {{ if query != "" { "--query '" + query + "'" } else { "" } }}
 
+# Live probe of subtitlecat (network!) — not run in CI
+probe-live-subtitlecat movie="Obsession" year="2025" lang="ru":
+    SRT_SEARCH_LANGUAGE={{ lang }} uv run srt-search find "{{ movie }}" --year {{ year }} --providers subtitlecat --limit 3
+
 # Render flat .env from config templates
 env-render:
     bash config/.env-render.sh

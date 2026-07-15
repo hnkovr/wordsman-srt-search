@@ -11,11 +11,13 @@ from srt_search.providers.base import (
 )
 from srt_search.providers.gestdown import GestdownProvider
 from srt_search.providers.podnapisi import PodnapisiProvider
+from srt_search.providers.subtitlecat import SubtitlecatProvider
 from srt_search.providers.yify import YifyProvider
 
 REGISTRY: dict[str, type[SearchProvider]] = {
     PodnapisiProvider.name: PodnapisiProvider,
     YifyProvider.name: YifyProvider,
+    SubtitlecatProvider.name: SubtitlecatProvider,
     GestdownProvider.name: GestdownProvider,
 }
 
@@ -37,6 +39,7 @@ __all__ = [
     "ProviderError",
     "ProviderNotImplementedError",
     "SearchProvider",
+    "SubtitlecatProvider",
     "SubtitleNotFoundError",
     "YifyProvider",
     "make_provider",
