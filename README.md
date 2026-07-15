@@ -13,6 +13,20 @@ Autonomous subproduct of [wordsman](https://github.com/hnkovr/wordsman) (consume
 | `yify` | **implemented** | keyless | IMDb suggest → yifysubtitles movie page → ZIP; movies only |
 | `gestdown` | stub | keyless | TODO — tracked as "srt-search: implement Gestdown provider" (WordsMan) |
 
+### Dual / bilingual subtitle sources
+
+Beyond single-language providers, `config/config.yml` catalogs dual-subtitle sources
+(`dual_subtitle_sources`):
+
+| Source | Access | Free | How |
+| --- | --- | --- | --- |
+| `doublesubs` | browser | no | `srt-search open-doublesubs [--query TITLE]` opens the app for interactive authorize + build (Stripe-gated; no public API) |
+| `subtitlecat` | keyless | yes | auto-translates subs to many languages — candidate for a real provider |
+| `downsub` | keyless | yes | downloads + translates subs (YouTube/Viki/…) |
+| `subtitle_edit_online` | browser | yes | free in-browser tool to merge two tracks by hand |
+
+For a fully local EN+RU merge use the parent repo's `python3 main.py bilingual`.
+
 All providers implement one `SearchProvider` interface
 ([`src/srt_search/providers/base.py`](src/srt_search/providers/base.py)); the aggregator
 ([`src/srt_search/aggregator.py`](src/srt_search/aggregator.py)) fans out concurrently, collects

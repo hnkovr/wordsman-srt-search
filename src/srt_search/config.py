@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     providers: Annotated[list[str], NoDecode] = ["podnapisi"]
     download_dir: Path = Path("downloads")
     request_timeout: float = 30.0
-    user_agent: str = "wordsman-srt-search/0.3.0"
+    user_agent: str = "wordsman-srt-search/0.4.0"
     # some resources (yify zip endpoint) 403 non-browser agents without a referer
     browser_user_agent: str = (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     gestdown_base_url: str = "https://api.gestdown.info"
     imdb_suggest_url: str = "https://v3.sg.media-imdb.com/suggestion/x"
     kinopoisk_base_url: str = "https://www.kinopoisk.ru"
+    # dual / bilingual subtitle sources (see config.yml `dual_subtitle_sources` for the
+    # annotated catalog: which are free/keyless vs. account-gated browser-assisted)
+    doublesubs_app_url: str = "https://app.doublesubs.com"
+    subtitlecat_base_url: str = "https://www.subtitlecat.com"
+    downsub_base_url: str = "https://downsub.com"
+    subtitle_edit_online_url: str = "https://www.nikse.dk/subtitleedit/online"
 
     @field_validator("providers", mode="before")
     @classmethod

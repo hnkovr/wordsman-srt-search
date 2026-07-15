@@ -28,6 +28,10 @@ probe-live-yify movie="Beautiful Mind" year="2001":
 resolve-kp url:
     uv run srt-search resolve-kp "{{ url }}"
 
+# Open DoubleSubs (browser-assisted dual-sub source) — macOS GUI authorize + build
+open-doublesubs query="":
+    uv run srt-search open-doublesubs {{ if query != "" { "--query '" + query + "'" } else { "" } }}
+
 # Render flat .env from config templates
 env-render:
     bash config/.env-render.sh

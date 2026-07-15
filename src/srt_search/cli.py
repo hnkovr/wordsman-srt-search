@@ -48,6 +48,19 @@ def resolve_kp(url: str) -> None:
     click.echo(json.dumps(payload, ensure_ascii=False, indent=2))
 
 
+@main.command(name="open-doublesubs")
+@click.option("--query", default=None, help="Movie title to carry into the app")
+@click.option("--print-url", is_flag=True, help="Print the URL instead of opening a browser")
+def open_doublesubs_cmd(query: str | None, print_url: bool) -> None:
+    """Open DoubleSubs (browser-assisted dual-sub source) for interactive authorize + build."""
+    from srt_search.doublesubs import build_doublesubs_url, open_doublesubs  # lazy: GUI dep
+
+    if print_url:
+        click.echo(build_doublesubs_url(query))
+        return
+    click.echo(open_doublesubs(query))
+
+
 @main.command()
 @click.argument("movie")
 @click.option("--year", type=int, default=None)

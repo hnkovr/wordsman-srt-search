@@ -5,9 +5,39 @@ providers:
   - podnapisi
 download_dir: downloads
 request_timeout: 30.0
-user_agent: wordsman-srt-search/0.3.0
+user_agent: wordsman-srt-search/0.4.0
 podnapisi_base_url: https://www.podnapisi.net
 yify_base_url: https://yifysubtitles.ch
 gestdown_base_url: https://api.gestdown.info
 imdb_suggest_url: https://v3.sg.media-imdb.com/suggestion/x
 kinopoisk_base_url: https://www.kinopoisk.ru
+
+# Dual / bilingual subtitle sources. `access` is how a track is obtained:
+#   keyless      — plain HTTP, automatable (candidate for a real provider)
+#   browser      — account/paywall gated; opened via macOS GUI (open-doublesubs)
+# The srt-search built-in EN+RU merge lives in the parent repo (`main.py bilingual`).
+doublesubs_app_url: https://app.doublesubs.com
+subtitlecat_base_url: https://www.subtitlecat.com
+downsub_base_url: https://downsub.com
+subtitle_edit_online_url: https://www.nikse.dk/subtitleedit/online
+dual_subtitle_sources:
+  - name: doublesubs
+    url: https://app.doublesubs.com
+    access: browser
+    free: false
+    notes: Stripe-gated web app; authorize via `srt-search open-doublesubs`.
+  - name: subtitlecat
+    url: https://www.subtitlecat.com
+    access: keyless
+    free: true
+    notes: Auto-translates subs to many languages; good bilingual candidate provider.
+  - name: downsub
+    url: https://downsub.com
+    access: keyless
+    free: true
+    notes: Downloads + translates subs (YouTube/Viki/etc); keyless.
+  - name: subtitle_edit_online
+    url: https://www.nikse.dk/subtitleedit/online
+    access: browser
+    free: true
+    notes: Free in-browser tool to merge/edit two tracks manually.
