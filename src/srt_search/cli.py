@@ -66,10 +66,17 @@ def open_doublesubs_cmd(query: str | None, print_url: bool) -> None:
 @click.option("--year", type=int, default=None)
 @click.option("--limit", type=int, default=10)
 @click.option("--providers", "provider_names", default=None, help="Comma-separated provider names")
-def find(movie: str, year: int | None, limit: int, provider_names: str | None) -> None:
+@click.option(
+    "--llm-fallback", is_flag=True, help="Ask an LLM CLI to disambiguate if nothing found"
+)
+def find(
+    movie: str, year: int | None, limit: int, provider_names: str | None, llm_fallback: bool
+) -> None:
     """Print merged subtitle candidates for MOVIE as JSON."""
     selected = resolve_providers(_parse_providers(provider_names))
-    result = asyncio.run(search_all(movie, year=year, limit=limit, providers=selected))
+    result = asyncio.run(
+        search_all(movie, year=year, limit=limit, providers=selected, llm_fallback=llm_fallback)
+    )
     click.echo(json.dumps(result.model_dump(), indent=2, ensure_ascii=False))
 
 
@@ -78,12 +85,23 @@ def find(movie: str, year: int | None, limit: int, provider_names: str | None) -
 @click.option("--year", type=int, default=None)
 @click.option("--out", type=click.Path(path_type=Path), default=None, help="Target directory")
 @click.option("--providers", "provider_names", default=None, help="Comma-separated provider names")
-def get(movie: str, year: int | None, out: Path | None, provider_names: str | None) -> None:
+@click.option(
+    "--llm-fallback", is_flag=True, help="Ask an LLM CLI to disambiguate if nothing found"
+)
+def get(
+    movie: str,
+    year: int | None,
+    out: Path | None,
+    provider_names: str | None,
+    llm_fallback: bool,
+) -> None:
     """Download the best English SRT for MOVIE; print the saved path (last line)."""
 
     async def _get() -> Path:
         selected = resolve_providers(_parse_providers(provider_names))
-        result = await search_all(movie, year=year, limit=10, providers=selected)
+        result = await search_all(
+            movie, year=year, limit=10, providers=selected, llm_fallback=llm_fallback
+        )
         candidate = best_candidate(result.candidates)
         if candidate is None:
             raise click.ClickException(f"no subtitles found for {movie!r}")

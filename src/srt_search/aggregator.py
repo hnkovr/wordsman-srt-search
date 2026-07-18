@@ -18,20 +18,9 @@ def resolve_providers(
     return [make_provider(name, settings) for name in (names or settings.providers)]
 
 
-async def search_all(
-    movie: str,
-    year: int | None = None,
-    limit: int = 10,
-    providers: list[SearchProvider] | None = None,
-    settings: Settings | None = None,
-) -> SearchResult:
-    """Query every provider concurrently; a provider failure never hides the others.
-
-    Raises ProviderError only when ALL providers fail (nothing usable came back).
-    """
-    providers = providers if providers is not None else resolve_providers(settings=settings)
-    if not providers:
-        raise ValueError("no providers configured")
+async def _query_providers(
+    providers: list[SearchProvider], movie: str, year: int | None, limit: int
+) -> tuple[list[SearchCandidate], list[ProviderFailure]]:
     outcomes = await asyncio.gather(
         *(p.search(movie, year=year, limit=limit) for p in providers),
         return_exceptions=True,
@@ -46,7 +35,45 @@ async def search_all(
             failures.append(ProviderFailure(provider=provider.name, error=str(outcome)))
         else:
             candidates.extend(outcome)
-    if failures and not candidates and len(failures) == len(providers):
+    return candidates, failures
+
+
+async def search_all(
+    movie: str,
+    year: int | None = None,
+    limit: int = 10,
+    providers: list[SearchProvider] | None = None,
+    settings: Settings | None = None,
+    llm_fallback: bool = False,
+) -> SearchResult:
+    """Query every provider concurrently; a provider failure never hides the others.
+
+    When ``llm_fallback`` is set and nothing is found, an LLM CLI is asked to
+    disambiguate the title and the search is retried with its suggested titles.
+    Raises ProviderError only when ALL providers fail (nothing usable came back).
+    """
+    providers = providers if providers is not None else resolve_providers(settings=settings)
+    if not providers:
+        raise ValueError("no providers configured")
+    candidates, failures = await _query_providers(providers, movie, year, limit)
+
+    if not candidates and llm_fallback:
+        from srt_search.llm_fallback import suggest_query  # lazy: optional subprocess path
+
+        suggestion = suggest_query(movie, year, settings=settings)
+        if suggestion is not None:
+            log.info("llm_fallback: {} -> {}", movie, suggestion.note or suggestion.title)
+            for alt in suggestion.queries(movie):
+                if alt.lower() == movie.lower():
+                    continue
+                alt_year = suggestion.year or year
+                candidates, alt_failures = await _query_providers(providers, alt, alt_year, limit)
+                if candidates:
+                    log.info("llm_fallback: found via {!r} ({})", alt, alt_year)
+                    break
+                failures.extend(alt_failures)
+
+    if failures and not candidates and len(failures) >= len(providers):
         details = "; ".join(f"{f.provider}: {f.error}" for f in failures)
         raise ProviderError(f"all providers failed for {movie!r}: {details}")
     candidates.sort(key=lambda c: c.downloads, reverse=True)
