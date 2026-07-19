@@ -24,11 +24,12 @@ from srt_search.logger import log
 from srt_search.models import SearchCandidate
 from srt_search.providers.base import ProviderError, SearchProvider
 
-# Season/episode markers, most explicit first.
+# Season/episode markers, most explicit first. The word form tolerates common
+# spellings/abbreviations: "episode", "episod" (typo), and "ep".
 _EPISODE_RES = (
     re.compile(r"s(\d{1,2})[\s._-]*e(\d{1,3})", re.I),
     re.compile(r"(?<!\d)(\d{1,2})x(\d{1,3})(?!\d)", re.I),
-    re.compile(r"season\s*(\d{1,2}).*?episode\s*(\d{1,3})", re.I),
+    re.compile(r"season\s*(\d{1,2}).*?\bep(?:isode|isod)?\b\.?\s*(\d{1,3})", re.I),
 )
 
 # ISO 639-1 → the language name Gestdown expects in the path.
@@ -50,6 +51,8 @@ def parse_episode(query: str) -> tuple[str, int, int] | None:
     ('The Wire', 1, 3)
     >>> parse_episode("Severance season 2 episode 5")
     ('Severance', 2, 5)
+    >>> parse_episode("Scenes from a Marriage, 2021, season 1, episod 1")
+    ('Scenes from a Marriage', 1, 1)
     >>> parse_episode("Inception") is None
     True
     """
@@ -57,10 +60,25 @@ def parse_episode(query: str) -> tuple[str, int, int] | None:
         match = pattern.search(query)
         if match:
             season, episode = int(match.group(1)), int(match.group(2))
-            title = query[: match.start()].strip(" -._·")
+            title = _clean_title(query[: match.start()])
             if title:
                 return title, season, episode
     return None
+
+
+def _clean_title(raw: str) -> str:
+    """Trim a show title from the text before a season/episode marker.
+
+    Drops a trailing release year and surrounding punctuation so the show search
+    gets a clean name.
+
+    >>> _clean_title("Scenes from a Marriage, 2021, ")
+    'Scenes from a Marriage'
+    >>> _clean_title("The Wire ")
+    'The Wire'
+    """
+    title = re.sub(r"[,\s]*(?:19|20)\d{2}[,\s]*$", "", raw)
+    return title.strip(" -._·,")
 
 
 _DISPOSITION_RE = re.compile(r'filename="?([^";]+)"?')
