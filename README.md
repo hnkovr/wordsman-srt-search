@@ -12,7 +12,7 @@ Autonomous subproduct of [wordsman](https://github.com/hnkovr/wordsman) (consume
 | `podnapisi` | **implemented** | keyless | JSON search on podnapisi.net; downloads unpacked from ZIP |
 | `yify` | **implemented** | keyless | IMDb suggest → yifysubtitles movie page → ZIP; movies only |
 | `subtitlecat` | **implemented** | keyless | many auto-translated languages per subtitle — honours `SRT_SEARCH_LANGUAGE` (en, **ru**, …); the dual-sub track source |
-| `gestdown` | stub | keyless | TODO — tracked as "srt-search: implement Gestdown provider" (WordsMan) |
+| `gestdown` | **implemented** | keyless | Addic7ed proxy (api.gestdown.info); **TV episodes** — query must carry a season/episode marker (`S01E01`, `1x01`, `season 1 episode 1`) |
 
 ### Dual / bilingual subtitle sources
 
@@ -37,7 +37,7 @@ per-provider failures without hiding partial results, and raises only when every
 
 ```bash
 make install                 # uv sync --group dev
-just providers               # podnapisi  implemented / yify  implemented / gestdown  stub
+just providers               # podnapisi / yify / subtitlecat / gestdown — all implemented
 just find "Dune" 2021        # merged candidates as JSON
 just get "Dune" 2021 subs/   # download best English SRT, prints saved path
 
