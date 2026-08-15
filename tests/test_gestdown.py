@@ -53,9 +53,10 @@ def test_parse_episode_variants():
     assert parse_episode("Scenes from a Marriage S01E01") == ("Scenes from a Marriage", 1, 1)
     assert parse_episode("The Wire 1x03") == ("The Wire", 1, 3)
     assert parse_episode("Severance season 2 episode 5") == ("Severance", 2, 5)
-    # tolerant of the "episod" typo and the "ep" abbreviation
+    # tolerant of the "episod" typo and the "ep" abbreviation;
+    # a trailing ", <year>" is stripped from the title
     assert parse_episode("Scenes from a Marriage, 2021, season 1, episod 1") == (
-        "Scenes from a Marriage, 2021",
+        "Scenes from a Marriage",
         1,
         1,
     )

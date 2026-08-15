@@ -24,7 +24,8 @@ def test_cli_providers_lists_status():
     assert result.exit_code == 0
     assert "podnapisi\timplemented" in result.output
     assert "yify\timplemented" in result.output
-    assert "gestdown\tstub" in result.output
+    assert "gestdown\timplemented" in result.output
+    assert "subtitlecat\timplemented" in result.output
 
 
 def test_cli_find_prints_json(monkeypatch):

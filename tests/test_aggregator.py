@@ -80,12 +80,13 @@ def test_search_all_no_providers_fails_loud():
         asyncio.run(search_all("Dune", providers=[]))
 
 
-def test_stub_providers_raise_not_implemented():
+def test_no_stub_providers_remain_in_registry():
+    from srt_search.providers import REGISTRY
+
     settings = make_settings()
-    with pytest.raises(ProviderNotImplementedError, match="stub"):
-        asyncio.run(GestdownProvider(settings).search("Dune"))
-    with pytest.raises(ProviderNotImplementedError, match="stub"):
-        asyncio.run(GestdownProvider(settings).download("x"))
+    for name in REGISTRY:
+        provider = make_provider(name, settings)
+        assert provider.implemented, name
 
 
 def test_download_candidate_routes_by_provider(monkeypatch):
