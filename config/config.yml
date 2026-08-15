@@ -15,6 +15,10 @@ kinopoisk_base_url: https://www.kinopoisk.ru
 # Dual / bilingual subtitle sources. `access` is how a track is obtained:
 #   keyless      — plain HTTP, automatable (candidate for a real provider)
 #   browser      — account/paywall gated; opened via macOS GUI (open-doublesubs)
+#   torrent      — links-only by policy: render `search_url` for the user;
+#                  never scrape or download from these programmatically
+# Optional `search_url`: template with {query} (URL-encoded) for links-only
+# rendering by consumers (e.g. the tg-bot /ru commands).
 # The srt-search built-in EN+RU merge lives in the parent repo (`main.py bilingual`).
 doublesubs_app_url: https://app.doublesubs.com
 subtitlecat_base_url: https://www.subtitlecat.com
@@ -30,7 +34,9 @@ dual_subtitle_sources:
     url: https://www.subtitlecat.com
     access: keyless
     free: true
-    notes: Auto-translates subs to many languages; good bilingual candidate provider.
+    search_url: "https://www.subtitlecat.com/index.php?search={query}"
+    notes: Auto-translates subs to many languages (honours ru via
+      SRT_SEARCH_LANGUAGE); the bot's online RU subs provider.
   - name: downsub
     url: https://downsub.com
     access: keyless
@@ -41,3 +47,25 @@ dual_subtitle_sources:
     access: browser
     free: true
     notes: Free in-browser tool to merge/edit two tracks manually.
+  - name: opensubtitles
+    url: https://www.opensubtitles.com
+    access: keyless
+    free: true
+    search_url: "https://www.opensubtitles.com/en/en/search-all/q-{query}"
+    notes: Largest catalog, ru-capable; API downloads need a key — listed
+      links-only here. Verify the search-URL shape on first use.
+  - name: rutracker
+    url: https://rutracker.org
+    access: torrent
+    free: true
+    search_url: "https://rutracker.org/forum/tracker.php?nm={query}"
+    notes: Registration-gated tracker with a dedicated section for separate
+      audio tracks/translations and subtitle-only releases — navigate to it
+      from search results. Links-only by policy.
+  - name: nnm-club
+    url: https://nnmclub.to
+    access: torrent
+    free: true
+    search_url: "https://nnmclub.to/forum/tracker.php?nm={query}"
+    notes: RU tracker with separate subs/audio releases. Domain and search-URL
+      shape unverified — verify on first use. Links-only by policy.
