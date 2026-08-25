@@ -88,3 +88,74 @@ def test_registered_in_registry():
 
     assert REGISTRY["subtitlecat"] is SubtitlecatProvider
     assert isinstance(make_provider("subtitlecat", make_settings()), SubtitlecatProvider)
+
+
+# Rows as the live search table renders them: popularity and how many languages exist.
+SEARCH_TABLE = (
+    "<table>\n"
+    '<tr><td><a href="subs/1397/Rich.html">Rich</a> (translated from English)</td>'
+    "<td>31 downloads</td><td>31 languages</td></tr>\n"
+    '<tr><td><a href="subs/1459/Poor.html">Poor</a></td>'
+    "<td>10 downloads</td><td>10 languages</td></tr>\n"
+    "</table>"
+)
+NO_RU_HTML = '<a id="download_en" href="/subs/1459/Poor-en.srt">Download</a>'
+HAS_RU_HTML = '<a id="download_ru" href="/subs/1397/Rich-ru.srt">Download</a>'
+
+
+@respx.mock
+def test_search_parses_downloads_from_the_table():
+    """Ranking is by downloads — parsing 0 for everything made the order arbitrary."""
+    respx.get(f"{BASE}/index.php").mock(return_value=Response(200, text=SEARCH_TABLE))
+    candidates = asyncio.run(make_provider().search("X"))
+    assert [c.downloads for c in candidates] == [31, 10]
+
+
+@respx.mock
+def test_english_search_does_not_open_detail_pages():
+    """English is the source language of every entry — verifying it would be wasted GETs."""
+    search = respx.get(f"{BASE}/index.php").mock(return_value=Response(200, text=SEARCH_TABLE))
+    detail = respx.get(url__regex=rf"{BASE}/subs/.*").mock(return_value=Response(200, text=""))
+    asyncio.run(make_provider(language="en").search("X"))
+    assert search.called and not detail.called
+
+
+@respx.mock
+def test_russian_search_drops_candidates_without_a_russian_track():
+    """A listed candidate whose download would fail is worse than a shorter list."""
+    respx.get(f"{BASE}/index.php").mock(return_value=Response(200, text=SEARCH_TABLE))
+    respx.get(f"{BASE}/subs/1397/Rich.html").mock(return_value=Response(200, text=HAS_RU_HTML))
+    respx.get(f"{BASE}/subs/1459/Poor.html").mock(return_value=Response(200, text=NO_RU_HTML))
+    candidates = asyncio.run(make_provider(language="ru").search("X"))
+    assert [c.candidate_id for c in candidates] == ["subs/1397/Rich"]
+
+
+@respx.mock
+def test_unreachable_detail_page_keeps_the_candidate():
+    """A transient fault must not silently shrink the list — let the download report it."""
+    respx.get(f"{BASE}/index.php").mock(return_value=Response(200, text=SEARCH_TABLE))
+    respx.get(f"{BASE}/subs/1397/Rich.html").mock(return_value=Response(200, text=HAS_RU_HTML))
+    respx.get(f"{BASE}/subs/1459/Poor.html").mock(return_value=Response(503))
+    candidates = asyncio.run(make_provider(language="ru").search("X"))
+    assert {c.candidate_id for c in candidates} == {"subs/1397/Rich", "subs/1459/Poor"}
+
+
+@respx.mock
+def test_verification_is_capped():
+    respx.get(f"{BASE}/index.php").mock(return_value=Response(200, text=SEARCH_TABLE))
+    detail = respx.get(url__regex=rf"{BASE}/subs/.*").mock(
+        return_value=Response(200, text=HAS_RU_HTML)
+    )
+    provider = make_provider(language="ru", subtitlecat_verify_max=1)
+    candidates = asyncio.run(provider.search("X"))
+    assert detail.call_count == 1
+    assert [c.candidate_id for c in candidates] == ["subs/1397/Rich"]  # most languages first
+
+
+@respx.mock
+def test_verification_can_be_switched_off():
+    respx.get(f"{BASE}/index.php").mock(return_value=Response(200, text=SEARCH_TABLE))
+    detail = respx.get(url__regex=rf"{BASE}/subs/.*").mock(return_value=Response(200, text=""))
+    provider = make_provider(language="ru", subtitlecat_verify_language=False)
+    assert len(asyncio.run(provider.search("X"))) == 2
+    assert not detail.called

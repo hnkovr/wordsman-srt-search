@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     # annotated catalog: which are free/keyless vs. account-gated browser-assisted)
     doublesubs_app_url: str = "https://app.doublesubs.com"
     subtitlecat_base_url: str = "https://www.subtitlecat.com"
+    # Subtitlecat hosts ONE entry per release and generates each language on demand, so a
+    # title that matches the search may still have no track in `language`. Verifying costs
+    # one detail-page GET per candidate but keeps unusable results out of the list — see
+    # SubtitlecatProvider.search. English is the source language and never verified.
+    subtitlecat_verify_language: bool = True
+    subtitlecat_verify_max: int = 12  # ceiling on those extra GETs per search
     downsub_base_url: str = "https://downsub.com"
     subtitle_edit_online_url: str = "https://www.nikse.dk/subtitleedit/online"
 
