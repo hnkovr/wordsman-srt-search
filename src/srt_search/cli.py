@@ -1,4 +1,4 @@
-"""Click CLI: list providers, search candidates, download the best English SRT."""
+"""Click CLI: list providers, search candidates, download the best or a chosen SRT."""
 
 from __future__ import annotations
 
@@ -12,7 +12,9 @@ from srt_search import __version__
 from srt_search.aggregator import download_candidate, resolve_providers, search_all
 from srt_search.config import get_settings
 from srt_search.logger import log
+from srt_search.models import SearchCandidate
 from srt_search.providers import REGISTRY
+from srt_search.providers.base import ProviderError
 from srt_search.utils import best_candidate, safe_download_path
 
 
@@ -112,6 +114,47 @@ def get(
         return target
 
     click.echo(str(asyncio.run(_get())))
+
+
+@main.command()
+@click.argument("provider_name", metavar="PROVIDER")
+@click.argument("candidate_id")
+@click.option("--out", type=click.Path(path_type=Path), default=None, help="Target directory")
+@click.option("--name", "file_name", default=None, help="Preferred file name for the saved SRT")
+@click.option("--json", "as_json", is_flag=True, help="Print {path,file_name,bytes} as JSON")
+def fetch(
+    provider_name: str,
+    candidate_id: str,
+    out: Path | None,
+    file_name: str | None,
+    as_json: bool,
+) -> None:
+    """Download ONE candidate already chosen by the caller: PROVIDER and its CANDIDATE_ID.
+
+    `get` searches and then picks the most-downloaded candidate itself. `fetch` skips the
+    search: the pair identifying the candidate comes from a previous `find`, so the choice
+    belongs to whoever ran it (a bot's inline button, a picker UI, a script). Language
+    follows SRT_SEARCH_LANGUAGE exactly as `find` does — a candidate listed by a RU search
+    may still have no RU track, and that fails loudly rather than saving an English file.
+    """
+
+    async def _fetch() -> tuple[Path, bytes]:
+        candidate = SearchCandidate(provider=provider_name, candidate_id=candidate_id)
+        try:
+            name, content = await download_candidate(candidate)
+        except (ProviderError, ValueError) as exc:
+            raise click.ClickException(str(exc)) from exc
+        target = safe_download_path(out or get_settings().download_dir, file_name or name)
+        target.write_bytes(content)
+        log.info("saved {} from {} ({} bytes)", target, provider_name, len(content))
+        return target, content
+
+    target, content = asyncio.run(_fetch())
+    if as_json:
+        payload = {"path": str(target), "file_name": target.name, "bytes": len(content)}
+        click.echo(json.dumps(payload, ensure_ascii=False))
+    else:
+        click.echo(str(target))
 
 
 if __name__ == "__main__":
